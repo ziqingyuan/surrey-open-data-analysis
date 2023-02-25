@@ -1,15 +1,13 @@
 import json
 import os
 import sys
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
-
 import string
 import model
-from typing import List
-
-from model import TransitStopRaw
+from typing import List, Any
+from pyproj import Transformer, Proj, transform
+from model import TransitStopRaw, TransitStop
 
 
 def load_transit_data():
@@ -29,7 +27,7 @@ def load_transit_data():
     return transit_data[2].get('features')
 
 
-def get_stop_coordinates(stop):
+def get_stop_coordinates(stop: Any):
     """
         Get the coordinate information of a transit stop.
 
@@ -42,7 +40,7 @@ def get_stop_coordinates(stop):
     return stop.get('geometry').get('coordinates')
 
 
-def get_stop_property(stop, property_name):
+def get_stop_property(stop: Any, property_name: string):
     """
         Get a specific property information of a transit stop.
 
@@ -55,7 +53,7 @@ def get_stop_property(stop, property_name):
     return stop.get('properties').get(property_name)
 
 
-def parse_to_raw_stop_data(transit_stop_array):
+def parse_to_raw_stop_data(transit_stop_array: List[TransitStopRaw]):
     stops_raw_data = load_transit_data()
     for stop in stops_raw_data:
         if "Point" != stop.get('geometry').get('type'):
@@ -74,3 +72,23 @@ def parse_to_raw_stop_data(transit_stop_array):
         )
         transit_stop_array.append(stop_raw)
 
+
+def convert_to_latlon(raw_data_arr: List[TransitStopRaw],
+                      parsed_arr: List[TransitStop],
+                      lon_arr: List[float],
+                      lat_arr: List[float]):
+    wgs84_sys = Proj("EPSG:4326")
+    utm_surrey_sys = Proj("EPSG:26910")
+    for stop_raw in raw_data_arr:
+        x = stop_raw.x
+        y = stop_raw.y
+        lon, lat = transform(utm_surrey_sys, wgs84_sys, x, y)
+        lon_arr.append(lon)
+        lat_arr.append(lat)
+        stop_cleaned = TransitStop(
+            id=stop_raw.id,
+            location=stop_raw.location,
+            lon=lon,
+            lat=lat
+        )
+        parsed_arr.append(stop_cleaned)
