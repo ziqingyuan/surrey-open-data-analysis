@@ -10,6 +10,7 @@ import pandas as pd
 from typing import List, Any
 import pyproj
 from model import TransitStop, Restaurant
+import openai
 
 
 class GeoSystem:
