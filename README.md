@@ -1,7 +1,7 @@
 # Python_SurreyPublicDataAnalysis
 Credits: Zoe Yuan
 
-Instructor: Racheal Pottinger
+Instructor: Rachel Pottinger
 
 ## Project Description
 
